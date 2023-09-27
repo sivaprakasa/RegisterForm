@@ -1,0 +1,29 @@
+Registration form using regular expression flask framework and mysql
+********************************************************************************************************
+@app.route('/register', methods=['GET','POST'])
+def register():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        cpassword = request.form['cpassword']
+        while True:
+            error = None
+            if password == cpassword:
+                if len(password)<6:
+                    error = 'password must be atleast six character'
+                    return render_template('register.html', error=error)
+                elif re.search(r'[!@#$&]',password)is None:         #this line is password setting symbols
+                    error = 'password must constrain atleast one speical symbal'
+                    return render_template('register.html',error=error)
+                elif re.search(r'\d',password)is None:  #this line is password settings digits
+                    error = 'password must contain one digit'
+                    return render_template('register.html',error=error)
+                elif re.match(r'[a-z A-Z 0-9 !@#$&]{6}',password):  #this line is password settings maximum six letters
+                    cursor = mysql.connection.cursor()
+                    cursor.execute("INSERT INTO user(username,password,cpassword)VALUES(%s,%s,%s)",(username,password,cpassword))
+                    mysql.connection.commit()
+                    cursor.close()
+                    return redirect(url_for('login'))
+            else:
+                return 'please password is dis matched'
+    return render_template('register.html')
